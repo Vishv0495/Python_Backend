@@ -1,0 +1,70 @@
+from flask import Flask, request, jsonify
+import PyPDF2
+import os
+from flask_cors import CORS
+import speech_recognition as sr
+import csv
+
+app = Flask(__name__)
+CORS(app)
+
+def extract_text_from_pdf(pdf_file):
+    pdf_reader = PyPDF2.PdfFileReader(pdf_file)
+    text = ''
+    for page_num in range(len(pdf_reader.pages)):
+        text += pdf_reader.pages[page_num].extractText()
+    return text
+
+@app.route('/')
+def hello():
+    return 'Hello, World!'
+
+@app.route('/extract-text', methods=['POST'])
+def extract_text():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    _, file_ext = os.path.splitext(file.filename)
+    if file_ext.lower() != '.pdf':
+        return jsonify({'error': 'Unsupported file format. Only PDF files are supported.'}), 400
+
+    try:
+        text = extract_text_from_pdf(file)
+        return jsonify({'text': text}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/generate_csv', methods=['POST'])
+def generate_csv():
+    data = request.json  # Assuming data is sent as JSON from the client
+    if not data:
+        return jsonify({'message': 'No data received'}), 400
+    
+    # Generate CSV file
+    csv_data = []
+    for item in data:
+        csv_data.append({'question': item['question'], 'answer': item['answer']})
+
+    # Create CSV file
+    filename = 'data.csv'
+    with open(filename, 'w', newline='') as csvfile:
+        fieldnames = ['question', 'answer']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for item in csv_data:
+            writer.writerow(item)
+
+    # Send the CSV file to the client
+    response = make_response(open(filename, 'r').read())
+    response.headers['Content-Disposition'] = 'attachment; filename=data.csv'
+    response.headers['Content-Type'] = 'text/csv'
+
+    return response
+
+if __name__ == '__main__':
+    app.run(debug=True)
