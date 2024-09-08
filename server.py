@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import PyPDF2
 import os
 from flask_cors import CORS
-import speech_recognition as sr
+# import speech_recognition as sr
 import csv
 
 app = Flask(__name__)
