@@ -3,6 +3,10 @@ import PyPDF2
 import os
 from flask_cors import CORS
 # import speech_recognition as sr
+from dotenv import load_dotenv
+
+load_dotenv()
+
 import csv
 
 app = Flask(__name__)
@@ -67,4 +71,5 @@ def generate_csv():
     return response
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # print(os.getenv("FLASK_RUN_HOST"))
+    app.run(host=os.getenv("FLASK_RUN_HOST"), port=1010,debug=True)
