@@ -73,4 +73,4 @@ def generate_csv():
 
 if __name__ == '__main__':
     # print(os.getenv("FLASK_RUN_HOST"))
-    app.run(host=os.getenv("FLASK_RUN_HOST"), port=os.getenv("PORT") || "2568" ,debug=True)
+    app.run(host=os.getenv("FLASK_RUN_HOST"), port=os.getenv("PORT") ,debug=True)
